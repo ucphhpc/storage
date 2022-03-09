@@ -2,6 +2,7 @@ JBOD Setup
 ==========
 
 Considering the overview in the diagram below::
+
         multipath {
                 uid 0
                 gid 0
@@ -11,5 +12,6 @@ Considering the overview in the diagram below::
                 prio "weightedpath"
                 prio_args "devname sdik 50 sdu 1 "
         }
+        
 'alias' defines the name and 'prio_args' which sdX has priority. There are details in the man
 page of multipath.conf.
