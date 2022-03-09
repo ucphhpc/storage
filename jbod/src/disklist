@@ -1,0 +1,69 @@
+#!/bin/bash
+source /etc/jbod/jbod.conf
+declare -A disks
+#encs=(500c0ff0f23e583c 500c0ff0f23e5b3c)
+
+
+function enc_idx() {
+  local e="$1"
+  local i
+
+  for i in ${!encs[@]}; do
+    if [ "${encs[$i]}" == "$e" ]; then
+      echo $i
+      return 0
+    fi
+  done
+ 
+  return 1
+}
+
+for i in /dev/sd*[a-z]; do
+  DEV="$(basename $i)"
+
+
+  test -f /sys/block/${DEV}/device/enclosure_device\:*/../id || continue
+  ENC_ID="$(cat /sys/block/${DEV}/device/enclosure_device\:*/../id|sed 's/^0x//')"
+  ENC="$(enc_idx $ENC_ID)" || continue
+  WWID="$(cat /sys/block/${DEV}/device/wwid|sed 's/^.*\.//')"
+  SAS_ADR="$(cat /sys/block/${DEV}/device/sas_address|sed 's/^0x//')"
+  ADR="$((0x${SAS_ADR}))"
+  SLOT="$(cat /sys/block/${DEV}/device/enclosure_device\:*/slot)"
+
+  if [ -z "${disks[$WWID]}" ]; then
+    disks[$WWID]="$ENC $SLOT $SAS_ADR $DEV"
+  else
+    set ${disks[$WWID]}
+    if [ "$(sg_inq -i /dev/${DEV}|grep 'Relative target port: 0x'|sed 's/^.*0x//')" == "1" ]; then
+      disks[$WWID]="$ENC $SLOT $SAS_ADR $DEV $3 $4"
+    else
+      disks[$WWID]="$ENC $SLOT $3 $4 $SAS_ADR $DEV"
+    fi
+  fi
+done
+
+#for i in ${!disks[@]}; do
+#  wwn="$i"
+
+#  echo  ${disks[$i]}
+#done
+#exit
+
+for i in ${!disks[@]}; do
+  wwn="$i"
+
+  set ${disks[$i]}
+
+  e="$1"
+  s="$2"
+  dev=($4 $6 $8)
+
+  np=$(name_path $e $s)
+  set $np
+ 
+  name=$1
+  p=$2
+
+  echo "$wwn ${name} ${dev[$p]} ${dev[$((1-$p))]}" 
+
+done

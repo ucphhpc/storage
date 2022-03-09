@@ -1,0 +1,129 @@
+#!/bin/bash
+shopt -s lastpipe
+
+cfgdir="/etc/jbod"
+cmddir="$(dirname $0)"
+
+declare -A ids
+
+multipath () {
+  local wwids=""
+
+  cat ${cfgdir}/multipath.conf
+
+  echo "multipaths {"
+
+  ${cmddir}/disklist| while read l; do
+    set $l
+
+    local wwn=$1
+    local name=$2
+    shift
+    shift
+    local devs=$*
+ 
+    local p=50
+    local prio="$(for i in $devs; do echo -n "$i $p "; p=1; done)"
+
+    wwids="$wwids $wwn"
+cat << EOF
+        multipath {
+                uid 0
+                gid 0
+                mode 0600
+                wwid "3$wwn"
+                alias $name
+		prio "weightedpath"
+                prio_args "devname $prio"
+        }
+EOF
+  done     
+  echo "}"
+
+
+  echo "blacklist_exceptions {"
+
+  for wwn in $wwids; do
+
+cat << EOF
+                wwid "3$wwn"
+EOF
+
+  done     
+  echo "}"
+
+}
+
+
+get_ids() {
+  if [ -d /sys/class/enclosure ]; then
+    for i in /sys/class/enclosure/*; do
+      id="$(cat ${i}/id)"
+      ids["$id"]="${ids["$id"]} $i"
+    done
+  else
+    echo "/sys/class/enclosure does not exist."
+    exit 1
+  fi
+}
+
+enc_list () {
+  declare -A list
+
+  get_ids
+
+  fmt="%-20s%-20s%s\n"
+  printf $fmt ID VENDOR MODEL
+
+  for id in ${!ids[@]}; do
+   paths="${ids[$id]}"
+    set $paths
+    path="$1"
+
+    vendor=$(cat $path/device/vendor)
+    model=$(cat $path/device/model)
+
+    printf $fmt ${id} ${vendor} ${model}
+  done
+}
+
+mpath_devs () {
+  local dm=$(basename $(readlink /dev/mapper/$1))
+
+  ls /sys/block/${dm}/slaves
+}
+
+disk_locate () {
+  local m=$1
+  local disk=$2
+  local dev
+  
+  for dev in $(mpath_devs $disk); do
+    echo $m > /sys/block/${dev}/device/enclosure_device*/locate
+  done
+}
+
+cmd=$1
+shift
+
+case $cmd in
+  locate )
+    cmd2=$1
+    shift
+    case $cmd2 in
+      on )    disk_locate 1 $1 ;;
+      off )   disk_locate 0 $1 ;;
+      * )     echo "syntax: jbod locate (on/off) <disk>" ;;
+    esac
+  ;;
+  enc )
+    cmd2=$1
+    shift
+    case $cmd2 in
+      list )    enc_list $* ;;
+      * )       echo "syntax: jbod enc list" ;;
+    esac
+  ;;
+  multipath )    multipath $* ;;
+  * )        echo unknown commmand ;;
+esac
