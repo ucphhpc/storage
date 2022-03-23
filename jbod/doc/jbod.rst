@@ -1,7 +1,9 @@
 JBOD Setup
 ==========
 
-This will describe how to configure disk names and paths using multipath.
+This describes how to setup multipath on JBODs, in a way that utilizes the bandwidth of all
+paths. Examples are based on two Dell ME484 JBODs with 162 HDDs and 6 SSDs. The disks are
+named into 9 18x HHD raid sets on two servers. 
 
 Multipath
 ---------
@@ -83,18 +85,18 @@ and a path number. Example config::
 
 The script is called 'jbod' and should be placed somewhere in the PATH (i.e. /usr/local/sbin), together
 with a helper script called 'disklist'. The script can be used to find the JBOD WWIDs that need to go
-into the 'encs' variable:
+into the 'encs' variable::
 
 # jbod enc list
 ID                  VENDOR              MODEL
 0x500c0ff0f23e583c  DellEMC             Array584EMM
 0x500c0ff0f23e5b3c  DellEMC             Array584EMM
 
-When jbod.conf is ready, the multipath.conf can be created with:
+When jbod.conf is ready, the multipath.conf can be created with::
 
 # jbod multipath > /etc/multipath.conf
 
-After this, run the following to apply the new config:
+After this, run the following to apply the new config::
 
 # multipath -r
 # systemctl restart multipathd
