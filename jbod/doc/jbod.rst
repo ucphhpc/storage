@@ -46,8 +46,6 @@ The config for generating multipath.conf is by default located in /etc/jbod/jbod
 a list of WWIDs of the target JBOD enclosures and a function mapping enclosure number and disk slot to a disk name
 and a path number. Example config::
 
-.. highlight:: bash
-
  encs=(500c0ff0f23e583c 500c0ff0f23e5b3c)
 
  # name_path(enc, slot) -> name, path
