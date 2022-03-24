@@ -1,0 +1,4 @@
+options zfs zfs_arc_max=206158430208 # 75% of total memory
+options zfs metaslab_debug_unload=1
+
+options zfs zfs_multihost_fail_intervals=15

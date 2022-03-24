@@ -1,0 +1,18 @@
+options zfs zfs_arc_max=206158430208  # 75% of total memory
+
+options zfs zfetch_max_distance=67108864
+options zfs zfs_vdev_aggregation_limit=16777216
+options zfs zfs_dirty_data_max=27487790694  # 10% of total memory
+
+options zfs zfs_vdev_async_write_min_active=5
+options zfs zfs_vdev_async_write_max_active=10
+options zfs zfs_vdev_async_read_max_active=16
+options zfs zfs_vdev_sync_read_min_active=16
+options zfs zfs_vdev_sync_read_max_active=16
+
+options zfs zfs_vdev_async_write_active_min_dirty_percent=20
+
+options zfs metaslab_debug_unload=1
+
+options zfs zfs_multihost_fail_intervals=15
+

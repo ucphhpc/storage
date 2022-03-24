@@ -1,0 +1,44 @@
+#!/bin/sh
+
+dir=$1
+version=$2
+
+# Setup build environment
+yum groupinstall -y "Development Tools"
+yum install -y zlib-devel libuuid-devel libattr-devel libblkid-devel libselinux-devel libudev-devel
+yum install -y parted lsscsi ksh openssl-devel elfutils-libelf-devel libaio-devel
+yum install -y kernel-devel-$(uname -r)
+
+cd $dir
+
+# Build SPL
+git clone https://github.com/zfsonlinux/spl
+
+cd spl
+git checkout spl-$version
+sh autogen.sh
+
+./configure --with-spec=redhat
+make -s -j$(nproc)
+make -j1 pkg-utils pkg-kmod
+
+# Install needed packages to build ZFS.
+yum localinstall -y spl-*.$(uname -p).rpm kmod-spl-devel-*.$(uname -p).rpm kmod-spl-*.$(uname -p).rpm kmod-spl-devel-*.$(uname -p).rpm
+
+cd ..
+
+# Build ZFS
+git clone https://github.com/zfsonlinux/zfs
+
+cd zfs
+git checkout zfs-$version
+
+# Patches fixing this bug: https://jira.whamcloud.com/browse/LU-13536
+git cherry-pick 78e213946
+git cherry-pick 58769a4eb
+
+sh autogen.sh
+
+./configure --with-spec=redhat
+make -s -j$(nproc)
+make -j1 pkg-utils pkg-kmod
