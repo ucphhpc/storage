@@ -61,7 +61,7 @@ and a path number. Example config::
    let col=slot%14         # Column in drawer. I.e. disk 0,14 and 28 are column 0.
 
    # Transpose to a column first layout.
-   let s2=6*col+3*drawer+row 
+   let s2=6*col+3*drawer+row
 
    # Set server, disk and raid number for HDDs (type=data).
    if [ "$s2" -lt "81" ]; then
@@ -76,7 +76,7 @@ and a path number. Example config::
      let server=(s2+enc)%2
      let disk=s2
      let raid=0
-     let path=enc    
+     let path=enc
    fi
 
    # Print disk name and path
@@ -87,19 +87,19 @@ The script is called 'jbod' and should be placed somewhere in the PATH (i.e. /us
 with a helper script called 'disklist'. The script can be used to find the JBOD WWIDs that need to go
 into the 'encs' variable::
 
-# jbod enc list
-ID                  VENDOR              MODEL
-0x500c0ff0f23e583c  DellEMC             Array584EMM
-0x500c0ff0f23e5b3c  DellEMC             Array584EMM
+ # jbod enc list
+ ID                  VENDOR              MODEL
+ 0x500c0ff0f23e583c  DellEMC             Array584EMM
+ 0x500c0ff0f23e5b3c  DellEMC             Array584EMM
 
 When jbod.conf is ready, the multipath.conf can be created with::
 
-# jbod multipath > /etc/multipath.conf
+ # jbod multipath > /etc/multipath.conf
 
 After this, run the following to apply the new config::
 
-# multipath -r
-# systemctl restart multipathd
+ # multipath -r
+ # systemctl restart multipathd
 
 Unfortunately, The config have to be rebuild after reboot, because sdX names can change. It is on the TODO
 to move this into a service, but for now it can be done in /etc/rc.local.
