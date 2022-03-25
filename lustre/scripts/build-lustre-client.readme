@@ -1,0 +1,18 @@
+usage: build-lustre <builddir> <version>
+
+Ex.
+
+./build-lustre /dev/shm 2.10.8
+
+It will install the required packages to build, so don't run it where you cannot
+allow package installation.
+
+When done the rpm packages will be locacated here <builddir>/*.rpm.
+
+For a minimum install you need to install,
+
+kmod-lustre-client
+lustre-client
+
+packages. 
+

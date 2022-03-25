@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ "$#" -lt 2 ]; then
+  echo "usage: build-lustre <builddir> <version>"
+  exit 1
+fi
+
+dir=$1
+version=$2
+
+
+yum -y groupinstall "Development Tools"
+yum -y install libselinux-devel kernel-devel-$(uname -r)
+yum -y install net-snmp-devel
+yum -y install libyaml-devel
+yum -y install python-docutils
+
+useradd -m build
+
+cat << EOF | sudo -i -u build sh
+
+cd $dir
+
+git clone git://git.whamcloud.com/fs/lustre-release.git
+cd lustre-release
+
+git checkout $version
+
+sh ./autogen.sh
+./configure --disable-server --enable-quota --enable-utils --enable-gss 
+
+make rpms
+EOF
+
+
