@@ -1,0 +1,23 @@
+#!/bin/sh
+
+dir=$1
+version=$2
+
+yum groupinstall -y "Development Tools"
+yum install -y zlib-devel libuuid-devel libattr-devel libblkid-devel libselinux-devel libudev-devel
+yum install -y parted lsscsi ksh openssl-devel elfutils-libelf-devel libaio-devel
+yum install -y kernel-devel-$(uname -r)
+yum install -y python-cffi python-setuptools libffi-devel python2-devel
+
+
+cd $dir
+
+git clone https://github.com/zfsonlinux/zfs
+
+cd zfs
+git checkout zfs-$version
+sh autogen.sh
+
+./configure --with-spec=redhat
+make -s -j$(nproc)
+make -j1 pkg-utils pkg-kmod
