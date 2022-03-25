@@ -1,6 +1,8 @@
 Lustre server and client setup
 ==============================
 
+Links
+
 
 Bulding Lustre
 --------------
@@ -73,3 +75,16 @@ For client::
 
  yum install lustre-client
 
+Manually installing the RPMs is also posible, but then you need to install all package dependencies as well.
+
+Creating Lustre targets
+-----------------------
+
+
+TODO:
+
+LNet
+ldev
+modprobe.d
+tuned-adm
+start Lustre (server, client)
