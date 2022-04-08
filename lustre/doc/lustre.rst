@@ -218,6 +218,26 @@ On oss[02-03] add this::
 
  oss02 oss03 MGS zfs:oss02p0/mgs-sif
 
+Start/Stop servers
+------------------
+
+With this command you can start/stop the targets in */etc/ldev.conf*. To start/stop all targets local to the server run::
+
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre start
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre stop
+
+To start stop a specific target::
+
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre start erda-OST000C
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre stop erda-OST000C
+
+To start/stop target from the other server in a failover scenario::
+
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre start foreign
+ SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre stop foreign
+
+
+
 TODO:
 
 start Lustre (server, client)
