@@ -53,16 +53,15 @@ MDT pool
 
 Here we create a pool consisting of 2 times 3 drive mirrors::
 
- # zpool create -o ashift=9 mds00p0 mirror /dev/mapper/d[0-2]r0s0-*-meta
- # zpool add -o ashift=9 mds00p0 mirror /dev/mapper/d[0-2]r1s0-*-meta
+ # zpool create -o ashift=9 mds00p0 mirror /dev/mapper/d[0-2]r0s0-*
+ # zpool add -o ashift=9 mds00p0 mirror /dev/mapper/d[0-2]r1s0-*
 
-
-
-The *ashift=9* option forces ZFS to use 512 bytes blocks. Otherwise, it would use the physical block size of the disks, which for SSDs often is 4k. However, with 4k blocks the space overhead is huge.
+So the mapping should have set of 3 SSDs for each mirror. The *ashift=9* option forces ZFS to use 512 bytes blocks.
+Otherwise, it would use the physical block size of the disks, which for SSDs often is 4k. However, with 4k blocks the space overhead is huge.
 
 Now we want to configure the default properties::
 
- # for i in compression=lz4 xattr=sa dnodesize=auto; do
+ # for i in xattr=sa dnodesize=auto; do
      zfs set $i oss00p0
    done
 
