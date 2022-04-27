@@ -55,6 +55,8 @@ The SSDs /dev/mapper/\*-meta will for now be used for caching metadata (secondar
 
  zpool add oss00p0 cache /dev/mapper/d0r0s0-*-meta1
 
+Make sure the *cache* keyword is included, otherwise you could add it as a regular data device, which cannot be removed. A cache device can be removed.
+
 MDT pool
 ~~~~~~~~
 
