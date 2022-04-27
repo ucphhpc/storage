@@ -1,7 +1,7 @@
 #!/bin/bash
 source /etc/jbod/jbod.conf
 declare -A disks
-#encs=(500c0ff0f23e583c 500c0ff0f23e5b3c)
+declare -A slots
 
 
 function enc_idx() {
@@ -21,23 +21,31 @@ function enc_idx() {
 for i in /dev/sd*[a-z]; do
   DEV="$(basename $i)"
 
-
   test -f /sys/block/${DEV}/device/enclosure_device\:*/../id || continue
   ENC_ID="$(cat /sys/block/${DEV}/device/enclosure_device\:*/../id|sed 's/^0x//')"
   ENC="$(enc_idx $ENC_ID)" || continue
+  SLOT="$(cat /sys/block/${DEV}/device/enclosure_device\:*/slot)"
   WWID="$(cat /sys/block/${DEV}/device/wwid|sed 's/^.*\.//')"
+  slots[$WWID]="$ENC $SLOT"
+done
+
+for i in /dev/sd*[a-z]; do
+  DEV="$(basename $i)"
+
+  WWID="$(cat /sys/block/${DEV}/device/wwid|sed 's/^.*\.//')"
+  [ -z "${slots[WWID]}" ] || continue
+
   SAS_ADR="$(cat /sys/block/${DEV}/device/sas_address|sed 's/^0x//')"
   ADR="$((0x${SAS_ADR}))"
-  SLOT="$(cat /sys/block/${DEV}/device/enclosure_device\:*/slot)"
 
   if [ -z "${disks[$WWID]}" ]; then
-    disks[$WWID]="$ENC $SLOT $SAS_ADR $DEV"
+    disks[$WWID]="${slots[$WWID]} $SAS_ADR $DEV"
   else
     set ${disks[$WWID]}
     if [ "$(sg_inq -i /dev/${DEV}|grep 'Relative target port: 0x'|sed 's/^.*0x//')" == "1" ]; then
-      disks[$WWID]="$ENC $SLOT $SAS_ADR $DEV $3 $4"
+      disks[$WWID]="${slots[$WWID]} $SAS_ADR $DEV $3 $4"
     else
-      disks[$WWID]="$ENC $SLOT $3 $4 $SAS_ADR $DEV"
+      disks[$WWID]="${slots[$WWID]} $3 $4 $SAS_ADR $DEV"
     fi
   fi
 done

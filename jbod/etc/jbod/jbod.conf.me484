@@ -1,4 +1,5 @@
-encs=(500c0ff0f23e583c 500c0ff0f23e5b3c)
+# Insert JBOD IDs
+encs=({{ jbod_encs }})
 
 # name_path(enc, slot) -> name, path
 function name_path() {

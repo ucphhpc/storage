@@ -68,6 +68,6 @@ Now we want to configure the default properties::
 ZFS tuning
 ----------
 
-ZFS has a lot knobs you can tune. For Lustre there is a wiki with `ZFS Tuning`_ sugestions. These are not maintained, so we have added our ZFS 0.7.13 */etc/modprobe.d* files for OSS and MDS in the *etc* dir.
+ZFS has a lot knobs you can tune. For Lustre there is a wiki with `ZFS Tuning`_ sugestions. These are not maintained, so we have added our ZFS 0.7.13 */etc/modprobe.d* files for OSS and MDS in the *etc* dir. These denpends on the specific system and might need retuning for newer ZFS versions.
 
 .. _ZFS Tuning: https://wiki.lustre.org/Category:ZFS_OSD_Tuning

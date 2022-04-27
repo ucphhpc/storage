@@ -1,0 +1,23 @@
+# MD1420
+
+# Insert JBOD IDs
+encs=({{ jbod_encs }})
+
+# name_path(enc, slot) -> name, path
+function name_path() {
+  local enc="$1"
+  local slot="$2"
+  local s2 disk raid server path
+
+  let s2=enc*24
+  let s2=s+slot
+
+  let server=s2/3%2
+  let disk=s2%3
+  let raid=s2/6
+  let path=raid%2
+  echo "d${disk}r${raid}s${server}-e${enc}s${slot}" "$path"
+}
+
+
+
