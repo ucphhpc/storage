@@ -236,13 +236,25 @@ To start/stop target from the other server in a failover scenario::
  SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre start foreign
  SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/lustre stop foreign
 
+Mount on client
+---------------
+
+After the lnet service is started lustre filesystems can be mounted like any other network filesystem. However, it is best to specify both MGS servers, so it works even if the MGS has moved to the failover server.
+
+Commandline mount example::
+
+ Client# mount -t lustre -o flock 10.10.10.100@tcp0:10.10.10.101@tcp0:/erda /lustre/erda
+ Client# mount -t lustre -o flock 10.10.10.103@tcp0:10.10.10.102@tcp0:/sif /lustre/sif
+
+Putting it into /etc/fstab::
+
+ 10.10.10.100@tcp0:10.10.10.101@tcp0:/erda /lustre/erda flock,_netdev 0 0
+ 10.10.10.103@tcp0:10.10.10.102@tcp0:/sif /lustre/sif flock,_netdev 0 0
 
 
-TODO:
+TODO::
 
-start Lustre (server, client)
-
-modprobe.d
-
-tuned-adm
+ modprobe.d
+ tuned-adm
+ tuning
 
