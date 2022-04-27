@@ -34,11 +34,11 @@ OST pools
 
 Here we create a raidz2 pool based on the disk mappings from multipath::
 
- # zpool create oss00p0 raidz2 /dev/mapper/d?r0s0-*-data /dev/mapper/d1?r0s0-e*-data
- # zpool create oss00p1 raidz2 /dev/mapper/d?r1s0-*-data /dev/mapper/d1?r1s0-e*-data
+ # zpool create oss00p0 raidz2 /dev/mapper/d?r0s0-*-data /dev/mapper/d1?r0s0-*-data
+ # zpool create oss00p1 raidz2 /dev/mapper/d?r1s0-*-data /dev/mapper/d1?r1s0-*-data
 
- # zpool create oss01p0 raidz2 /dev/mapper/d?r0s1-*-data /dev/mapper/d1?r0s1-e*-data
- # zpool create oss01p1 raidz2 /dev/mapper/d?r1s1-*-data /dev/mapper/d1?r1s1-e*-data
+ # zpool create oss01p0 raidz2 /dev/mapper/d?r0s1-*-data /dev/mapper/d1?r0s1-*-data
+ # zpool create oss01p1 raidz2 /dev/mapper/d?r1s1-*-data /dev/mapper/d1?r1s1-*-data
 
 Note that we here expect more than 10 drive and we want the listed in order, hence the two */dev/mapper/...*.
 
@@ -47,6 +47,13 @@ Now we want to configure the default properties on each pool. Information about 
  # for i in compression=lz4 redundant_metadata=most xattr=sa recordsize=1m dnodesize=auto secondarycache=metadata; do
      zfs set $i oss00p0
    done
+
+Metadata cache devices
+^^^^^^^^^^^^^^^^^^^^^^
+
+The SSDs /dev/mapper/\*-meta will for now be used for caching metadata (secondarycache=metadata). Each ZFS pool needs at leach on block device for this. If there is not enough SSDs they need to be partitioned to make enougth. Example adding a cache device to a pool::
+
+ zpool add oss00p0 cache /dev/mapper/d0r0s0-*-meta1
 
 MDT pool
 ~~~~~~~~
