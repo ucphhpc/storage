@@ -1,2 +1,2 @@
 # storage
-Lustre/ZFS storage
+ZFS nad Lustre storage using JBODs.
