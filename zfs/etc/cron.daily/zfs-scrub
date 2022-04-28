@@ -1,0 +1,26 @@
+{% raw %}#!/bin/bash
+
+# Remove trailing 0's from day of month
+day=$((10#$(date +%d)))
+
+days=$(cal $(date +"%m %Y") | awk 'NF {DAYS = $NF}; END {print DAYS}')
+
+pools=($(zpool list -H -o name))
+cnt="${#pools[@]}"
+
+if [ "$cnt" == "0" ]; then
+  exit
+fi
+
+let day--
+let delta=days/cnt
+let run=day%delta
+
+if [ "$run" == "0" ]; then
+  let run=day/delta
+
+  if [ "$run" -lt "$cnt" ]; then
+    zpool scrub "${pools[$run]}"
+  fi
+fi
+{% endraw %}

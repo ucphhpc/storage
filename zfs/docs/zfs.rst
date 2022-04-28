@@ -74,6 +74,16 @@ Now we want to configure the default properties::
      zfs set $i oss00p0
    done
 
+ZFS scrubbing
+-------------
+
+Pools need to be *scrubed* regularly to test that data is intact. For this there is a cron job called *zfs-scrub* that should go into */etc/cron.daily*. This will make sure that all pools are scrubed once a month.
+
+.. note::
+   Large enterprise SAS HDDs have a *Maximum Rated Workload* of ~500TB per year. This is for both read and write. Given that drives are moving into
+   the twenties of TBs, the reading IO caused by scrubing need to be considered. I.e. with 16TB HDDs it will be 192TB per year which is close to half the *Maximum Rated Workload*.
+
+
 ZFS tuning
 ----------
 
