@@ -9,7 +9,7 @@ function name_path() {
   local slot="$2"
   local s2 disk raid server path
 
-  let s2=enc*24
+  let s2=24*enc+slot
 
   let server=s2/3%2
   let disk=s2%3

@@ -1,0 +1,21 @@
+#!/bin/bash
+# Usage:
+#
+# test_map <jbod.conf file> <#slots enc0> <#slots enc1> ...
+
+
+file=$1
+shift
+
+source ${file}
+
+enc=0
+
+for slots in $*; do
+  let slots--
+
+  for slot in $(seq 0 ${slots}); do
+    name_path ${enc} ${slot}
+  done
+  let enc++
+done
