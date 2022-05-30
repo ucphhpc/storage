@@ -136,22 +136,21 @@ Let us call the two filesystems erda and sif. The ZFS pools to filesystems mappi
 
 The OST pools can be mapped however you like, but keeping things separate can be an advantage if posible.
 
-First we create the MGSes, which store information about the cluster. An MGS can service more filesystems, but to avoid this dependence we will create two. There can only be one active MGS per server, so they should not be on the same pair. Therefor we choose the OSS, but one could be on an MDS::
+First we create the MGS, which store information about the cluster. An MGS can service multiple filesystems, and servers in a Lustre cluster should only use one MGS::
 
- oss00# mkfs.lustre --backfstype=zfs --mgs --servicenode=10.10.10.100@tcp0:10.10.10.101@tcp0 oss00p0/mgs-erda
- oss03# mkfs.lustre --backfstype=zfs --mgs --servicenode=10.10.10.103@tcp0:10.10.10.102@tcp0 oss02p0/mgs-sif
+ oss00# mkfs.lustre --backfstype=zfs --mgs --servicenode=10.10.10.10@tcp0:10.10.10.11@tcp0 mds00p0/mgs
 
 The option *servicenode* defines where the MGS can be hosted. First it the normal location and second is the failover location.
 
 Next we create an MDT for each filesystem::
 
  mds00# mkfs.lustre --backfstype=zfs --mdt --fsname erda --index=0 \
-   --mgsnode=10.10.10.100@tcp0:10.10.10.101@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    mds00p0/erda0
 
  mds01# mkfs.lustre --backfstype=zfs --mdt --fsname erda --index=0 \
-   --mgsnode=10.10.10.103@tcp0:10.10.10.102@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.11@tcp0:10.10.10.10@tcp0 \
    mds01p0/erda0
 
@@ -160,22 +159,22 @@ The option *mgsnode* defines which nodes the MGS can be located at.
 The OSTs follow a simular format::
 
  oss00# mkfs.lustre --backfstype=zfs --ost --fsname erda --index=0 \
-   --mgsnode=10.10.10.100@tcp0:10.10.10.101@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.100@tcp0:10.10.10.101@tcp0 \
    oss00p0/erda0
 
  oss01# mkfs.lustre --backfstype=zfs --ost --fsname erda --index=5 \
-   --mgsnode=10.10.10.100@tcp0:10.10.10.101@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.101@tcp0:10.10.10.100@tcp0 \
    oss01p0/erda5
 
  oss02# mkfs.lustre --backfstype=zfs --ost --fsname erda --index=9 \
-   --mgsnode=10.10.10.100@tcp0:10.10.10.101@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.102@tcp0:10.10.10.103@tcp0 \
    oss02p0/erda9
 
  oss03# mkfs.lustre --backfstype=zfs --ost --fsname sif --index=0 \
-   --mgsnode=10.10.10.103@tcp0:10.10.10.102@tcp0 \
+   --mgsnode=10.10.10.10@tcp0:10.10.10.11@tcp0 \
    --servicenode=10.10.10.103@tcp0:10.10.10.102@tcp0 \
    oss03p0/sif0
 
@@ -184,7 +183,9 @@ This is only for the first pool on each server. The rest should be done in the s
 Configuratation
 ---------------
 
-A configuration mapping hosts to targets need to be created. Due to the MGS separation this cannot be the same file on all servers. For the example this is the basis to put in */etc/ldev.conf*::
+A configuration mapping hosts to targets need to be created. For the example this is the basis to put in */etc/ldev.conf*::
+
+ mds00 mds01 MGS zfs:mds00p0/mgs
 
  mds00 mds01 erda-MDT0000 zfs:mds00p0/erda0
  mds01 mds00 sif-MDT0000 zfs:mds01p0/sif0
@@ -209,14 +210,6 @@ A configuration mapping hosts to targets need to be created. Due to the MGS sepa
  oss03 oss02 sif-OST0001 zfs:oss03p0/sif1
  oss03 oss02 sif-OST0002 zfs:oss03p0/sif2
  oss03 oss02 sif-OST0003 zfs:oss03p0/sif3
-
-On oss[00-01] add this::
-
- oss00 oss01 MGS zfs:oss00p0/mgs-erda
-
-On oss[02-03] add this::
-
- oss02 oss03 MGS zfs:oss02p0/mgs-sif
 
 Start/Stop servers
 ------------------
@@ -243,13 +236,13 @@ After the lnet service is started lustre filesystems can be mounted like any oth
 
 Commandline mount example::
 
- Client# mount -t lustre -o flock 10.10.10.100@tcp0:10.10.10.101@tcp0:/erda /lustre/erda
- Client# mount -t lustre -o flock 10.10.10.103@tcp0:10.10.10.102@tcp0:/sif /lustre/sif
+ Client# mount -t lustre -o flock 10.10.10.10@tcp0:10.10.10.11@tcp0:/erda /lustre/erda
+ Client# mount -t lustre -o flock 10.10.10.10@tcp0:10.10.10.11@tcp0:/sif /lustre/sif
 
 Putting it into /etc/fstab::
 
- 10.10.10.100@tcp0:10.10.10.101@tcp0:/erda /lustre/erda flock,_netdev 0 0
- 10.10.10.103@tcp0:10.10.10.102@tcp0:/sif /lustre/sif flock,_netdev 0 0
+ 10.10.10.10@tcp0:10.10.10.11@tcp0:/erda /lustre/erda flock,_netdev 0 0
+ 10.10.10.10@tcp0:10.10.10.11@tcp0:/sif /lustre/sif flock,_netdev 0 0
 
 
 TODO::
@@ -257,4 +250,3 @@ TODO::
  modprobe.d
  tuned-adm
  tuning
-
