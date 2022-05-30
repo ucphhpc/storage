@@ -14,7 +14,7 @@ function enc_idx() {
       return 0
     fi
   done
- 
+
   return 1
 }
 
@@ -31,6 +31,10 @@ done
 
 for i in /dev/sd*[a-z]; do
   DEV="$(basename $i)"
+
+  if [ ! -e /sys/block/${DEV}/device/sas_address ]; then
+    continue
+  fi
 
   WWID="$(cat /sys/block/${DEV}/device/wwid|sed 's/^.*\.//')"
   [ -z "${slots[WWID]}" ] || continue
